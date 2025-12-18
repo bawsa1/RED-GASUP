@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Système d'Authentification et Services</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .header {
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 20px 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .header h1 i {
+            color: #4cc9f0;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .page {
+            display: none;
+        }
+        
+        .page.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        h2 {
+            color: #4cc9f0;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        h3 {
+            color: #fff;
+            margin: 25px 0 15px 0;
+            font-size: 18px;
+        }
+        
+        .note {
+            background-color: rgba(76, 201, 240, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            border-left: 4px solid #4cc9f0;
+            font-size: 14px;
+            color: #80d9ff;
+        }
+        
+        .note strong {
+            color: #fff;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #ddd;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #4cc9f0;
+            box-shadow: 0 0 0 2px rgba(76, 201, 240, 0.2);
+        }
+        
+        button {
+            background: linear-gradient(90deg, #4361ee, #4cc9f0);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        button.secondary {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        button.secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .service-card {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 25px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .service-card:hover {
+            transform: translateY(-5px);
+            background-color: rgba(76, 201, 240, 0.2);
+            border-color: #4cc9f0;
+        }
+        
+        .service-card i {
+            font-size: 40px;
+            margin-bottom: 15px;
+            color: #4cc9f0;
+        }
+        
+        .service-card h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        
+        .service-card p {
+            color: #aaa;
+            font-size: 14px;
+        }
+        
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+        }
+        
+        .message.error {
+            background-color: rgba(240, 76, 76, 0.2);
+            border: 1px solid rgba(240, 76, 76, 0.5);
+            color: #ff8080;
+        }
+        
+        .message.success {
+            background-color: rgba(76, 240, 100, 0.2);
+            border: 1px solid rgba(76, 240, 100, 0.5);
+            color: #80ff9a;
+        }
+        
+        .message.info {
+            background-color: rgba(76, 201, 240, 0.2);
+            border: 1px solid rgba(76, 201, 240, 0.5);
+            color: #80d9ff;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 30px;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #4cc9f0;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .back-button {
+            background: rgba(255, 255, 255, 0.1);
+            width: auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #aaa;
+            font-size: 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Styles pour les pages de maintenance */
+        .maintenance-page {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .maintenance-page i {
+            font-size: 60px;
+            color: #f0c476;
+            margin-bottom: 20px;
+        }
+        
+        .maintenance-page h2 {
+            border: none;
+            color: #f0c476;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .services-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+            
+            .container {
+                border-radius: 15px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-shield-alt"></i> Système d'Authentification et Services</h1>
+        </div>
+        
+        <div class="content">
+            <!-- Page de connexion admin -->
+            <div id="admin-login-page" class="page active">
+                <h2>Connexion Administrateur</h2>
+                <div id="admin-error" class="message error" style="display: none;">
+                    Identifiant, email ou mot de passe incorrect.
+                </div>
+                
+                <div class="note">
+                    <strong>Note :</strong> Vous devez utiliser des identifiants d'administrateur valides pour accéder au système.
+                </div>
+                
+                <div class="form-group">
+                    <label for="admin-id">Identifiant</label>
+                    <input type="text" id="admin-id" placeholder="Entrez votre identifiant">
+                </div>
+                <div class="form-group">
+                    <label for="admin-email">Email</label>
+                    <input type="email" id="admin-email" placeholder="Entrez votre email">
+                </div>
+                <div class="form-group">
+                    <label for="admin-password">Mot de passe</label>
+                    <input type="password" id="admin-password" placeholder="Entrez votre mot de passe">
+                </div>
+                <button id="admin-login-btn">Se connecter</button>
+            </div>
+            
+            <!-- Page d'infos personnelles -->
+            <div id="personal-info-page" class="page">
+                <button class="back-button" id="back-to-admin"><i class="fas fa-arrow-left"></i> Retour</button>
+                <h2>Informations Personnelles</h2>
+                <div id="personal-error" class="message error" style="display: none;">
+                    Informations incorrectes. Veuillez vérifier les données fournies.
+                </div>
+                
+                <div class="note">
+                    <strong>Note :</strong> Veuillez saisir vos informations personnelles complètes pour continuer.
+                </div>
+                
+                <div class="form-group">
+                    <label for="user-ip">Adresse IP</label>
+                    <input type="text" id="user-ip" placeholder="Ex: 192.168.1.1">
+                </div>
+                <div class="form-group">
+                    <label for="user-email">Email</label>
+                    <input type="email" id="user-email" placeholder="Entrez votre email">
+                </div>
+                <div class="form-group">
+                    <label for="user-password">Mot de passe</label>
+                    <input type="password" id="user-password" placeholder="Entrez votre mot de passe">
+                </div>
+                <div class="form-group">
+                    <label for="user-phone">Numéro de téléphone</label>
+                    <input type="text" id="user-phone" placeholder="Ex: +33 1 23 45 67 89">
+                </div>
+                <button id="personal-submit-btn">Valider</button>
+            </div>
+            
+            <!-- Page de services -->
+            <div id="services-page" class="page">
+                <button class="back-button" id="back-to-personal"><i class="fas fa-arrow-left"></i> Retour</button>
+                <h2>Sélectionnez un Service</h2>
+                <p>Choisissez l'outil que vous souhaitez utiliser :</p>
+                
+                <div class="services-grid">
+                    <div class="service-card" id="whatsapp-card">
+                        <i class="fab fa-whatsapp"></i>
+                        <h3>WhatsApp</h3>
+                        <p>Accéder à un compte WhatsApp</p>
+                    </div>
+                    
+                    <div class="service-card" id="telegram-card">
+                        <i class="fab fa-telegram"></i>
+                        <h3>Telegram</h3>
+                        <p>Accéder à un compte Telegram</p>
+                    </div>
+                    
+                    <div class="service-card" id="instagram-card">
+                        <i class="fab fa-instagram"></i>
+                        <h3>Instagram</h3>
+                        <p>Accéder à un compte Instagram</p>
+                    </div>
+                    
+                    <div class="service-card" id="call-card">
+                        <i class="fas fa-phone-alt"></i>
+                        <h3>Appel</h3>
+                        <p>Service d'appel téléphonique</p>
+                    </div>
+                    
+                    <div class="service-card" id="photos-card">
+                        <i class="fas fa-images"></i>
+                        <h3>Photos</h3>
+                        <p>Accéder aux photos</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Page WhatsApp -->
+            <div id="whatsapp-page" class="page">
+                <button class="back-button" id="back-to-services-whatsapp"><i class="fas fa-arrow-left"></i> Retour aux services</button>
+                <h2><i class="fab fa-whatsapp"></i> WhatsApp</h2>
+                <div class="form-group">
+                    <label for="whatsapp-number">Numéro de téléphone</label>
+                    <input type="text" id="whatsapp-number" placeholder="Entrez le numéro WhatsApp (ex: +33612345678)">
+                </div>
+                <button id="whatsapp-submit-btn">Valider</button>
+            </div>
+            
+            <!-- Page Telegram -->
+            <div id="telegram-page" class="page">
+                <button class="back-button" id="back-to-services-telegram"><i class="fas fa-arrow-left"></i> Retour aux services</button>
+                <h2><i class="fab fa-telegram"></i> Telegram</h2>
+                <div class="form-group">
+                    <label for="telegram-username">Nom d'utilisateur</label>
+                    <input type="text" id="telegram-username" placeholder="Entrez le nom d'utilisateur">
+                </div>
+                <div class="form-group">
+                    <label for="telegram-phone">Numéro de téléphone</label>
+                    <input type="text" id="telegram-phone" placeholder="Entrez le numéro de téléphone">
+                </div>
+                <button id="telegram-submit-btn">Valider</button>
+            </div>
+            
+            <!-- Page Instagram -->
+            <div id="instagram-page" class="page">
+                <button class="back-button" id="back-to-services-instagram"><i class="fas fa-arrow-left"></i> Retour aux services</button>
+                <h2><i class="fab fa-instagram"></i> Instagram</h2>
+                <div class="form-group">
+                    <label for="instagram-username">Nom d'utilisateur</label>
+                    <input type="text" id="instagram-username" placeholder="Entrez le nom d'utilisateur Instagram">
+                </div>
+                <button id="instagram-submit-btn">Valider</button>
+            </div>
+            
+            <!-- Page d'attente -->
+            <div id="waiting-page" class="page">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <h2>Traitement en cours</h2>
+                    <p id="waiting-message">Votre demande est en cours de traitement.</p>
+                    <p id="waiting-time">Veuillez patienter jusqu'à 3 jours.</p>
+                    <p><strong>Ne fermez pas cette page.</strong></p>
+                </div>
+            </div>
+            
+            <!-- Page de maintenance -->
+            <div id="maintenance-page" class="page">
+                <div class="maintenance-page">
+                    <i class="fas fa-tools"></i>
+                    <h2>Service en maintenance</h2>
+                    <p>Ce service est actuellement en maintenance.</p>
+                    <p>Veuillez réessayer ultérieurement.</p>
+                    <button class="back-button" id="back-from-maintenance"><i class="fas fa-arrow-left"></i> Retour aux services</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            Système sécurisé - Tous droits réservés © 2023
+        </div>
+    </div>
+
+    <script>
+        // 3 POSSIBILITÉS de connexion administrateur
+        const ADMIN_CREDENTIALS = [
+            {
+                id: "Thiemoko",
+                email: "tiemoko223@gmail.com",
+                password: "Sazerty223"
+            },
+            {
+                id: "superadmin",
+                email: "super@admin.com",
+                password: "AdminPower456"
+            },
+            {
+                id: "support2023",
+                email: "support@system.com",
+                password: "Support789!"
+            }
+        ];
+        
+        // 3 POSSIBILITÉS d'informations personnelles
+        const PERSONAL_INFO = [
+            {
+                ip: "192.168.1.100",
+                email: "user@example.com",
+                password: "UserPass2023",
+                phone: "+33123456789"
+            },
+            {
+                ip: "10.0.0.25",
+                email: "client@mail.com",
+                password: "ClientPass789",
+                phone: "+33612345678"
+            },
+            {
+                ip: "172.16.0.50",
+                email: "vip@client.fr",
+                password: "VipAccess123",
+                phone: "+33798765432"
+            }
+        ];
+        
+        // Éléments DOM
+        const pages = {
+            adminLogin: document.getElementById('admin-login-page'),
+            personalInfo: document.getElementById('personal-info-page'),
+            services: document.getElementById('services-page'),
+            whatsapp: document.getElementById('whatsapp-page'),
+            telegram: document.getElementById('telegram-page'),
+            instagram: document.getElementById('instagram-page'),
+            waiting: document.getElementById('waiting-page'),
+            maintenance: document.getElementById('maintenance-page')
+        };
+        
+        const adminError = document.getElementById('admin-error');
+        const personalError = document.getElementById('personal-error');
+        
+        // Variables pour suivre le service actuel
+        let currentService = '';
+        
+        // Fonction pour changer de page
+        function showPage(page) {
+            // Cacher toutes les pages
+            Object.values(pages).forEach(p => p.classList.remove('active'));
+            
+            // Afficher la page demandée
+            page.classList.add('active');
+        }
+        
+        // Gestion de la connexion admin
+        document.getElementById('admin-login-btn').addEventListener('click', function() {
+            const id = document.getElementById('admin-id').value;
+            const email = document.getElementById('admin-email').value;
+            const password = document.getElementById('admin-password').value;
+            
+            let isValid = false;
+            
+            // Vérifier les 3 possibilités de connexion admin
+            for (let i = 0; i < ADMIN_CREDENTIALS.length; i++) {
+                const admin = ADMIN_CREDENTIALS[i];
+                if (id === admin.id && email === admin.email && password === admin.password) {
+                    isValid = true;
+                    break;
+                }
+            }
+            
+            if (isValid) {
+                // Réinitialiser les champs et cacher les erreurs
+                document.getElementById('admin-id').value = '';
+                document.getElementById('admin-email').value = '';
+                document.getElementById('admin-password').value = '';
+                adminError.style.display = 'none';
+                
+                // Afficher la page des informations personnelles
+                showPage(pages.personalInfo);
+            } else {
+                // Afficher un message d'erreur
+                adminError.style.display = 'block';
+            }
+        });
+        
+        // Gestion du retour à la page admin
+        document.getElementById('back-to-admin').addEventListener('click', function() {
+            // Réinitialiser les champs de la page personnelle
+            document.getElementById('user-ip').value = '';
+            document.getElementById('user-email').value = '';
+            document.getElementById('user-password').value = '';
+            document.getElementById('user-phone').value = '';
+            personalError.style.display = 'none';
+            
+            showPage(pages.adminLogin);
+        });
+        
+        // Gestion de la validation des informations personnelles
+        document.getElementById('personal-submit-btn').addEventListener('click', function() {
+            const ip = document.getElementById('user-ip').value;
+            const email = document.getElementById('user-email').value;
+            const password = document.getElementById('user-password').value;
+            const phone = document.getElementById('user-phone').value;
+            
+            let isValid = false;
+            
+            // Vérifier les 3 possibilités d'informations personnelles
+            for (let i = 0; i < PERSONAL_INFO.length; i++) {
+                const info = PERSONAL_INFO[i];
+                if (ip === info.ip && email === info.email && 
+                    password === info.password && phone === info.phone) {
+                    isValid = true;
+                    break;
+                }
+            }
+            
+            if (isValid) {
+                // Cacher les erreurs
+                personalError.style.display = 'none';
+                
+                // Réinitialiser les champs
+                document.getElementById('user-ip').value = '';
+                document.getElementById('user-email').value = '';
+                document.getElementById('user-password').value = '';
+                document.getElementById('user-phone').value = '';
+                
+                // Afficher la page des services
+                showPage(pages.services);
+            } else {
+                // Toujours montrer une erreur si les informations ne correspondent à aucun profil
+                personalError.style.display = 'block';
+            }
+        });
+        
+        // Gestion du retour aux informations personnelles
+        document.getElementById('back-to-personal').addEventListener('click', function() {
+            showPage(pages.personalInfo);
+        });
+        
+        // Gestion des services
+        document.getElementById('whatsapp-card').addEventListener('click', function() {
+            currentService = 'whatsapp';
+            showPage(pages.whatsapp);
+        });
+        
+        document.getElementById('telegram-card').addEventListener('click', function() {
+            currentService = 'telegram';
+            showPage(pages.telegram);
+        });
+        
+        document.getElementById('instagram-card').addEventListener('click', function() {
+            currentService = 'instagram';
+            showPage(pages.instagram);
+        });
+        
+        document.getElementById('call-card').addEventListener('click', function() {
+            showPage(pages.maintenance);
+        });
+        
+        document.getElementById('photos-card').addEventListener('click', function() {
+            showPage(pages.maintenance);
+        });
+        
+        // Gestion du retour depuis les pages de service
+        document.getElementById('back-to-services-whatsapp').addEventListener('click', function() {
+            document.getElementById('whatsapp-number').value = '';
+            showPage(pages.services);
+        });
+        
+        document.getElementById('back-to-services-telegram').addEventListener('click', function() {
+            document.getElementById('telegram-username').value = '';
+            document.getElementById('telegram-phone').value = '';
+            showPage(pages.services);
+        });
+        
+        document.getElementById('back-to-services-instagram').addEventListener('click', function() {
+            document.getElementById('instagram-username').value = '';
+            showPage(pages.services);
+        });
+        
+        document.getElementById('back-from-maintenance').addEventListener('click', function() {
+            showPage(pages.services);
+        });
+        
+        // Gestion de la soumission WhatsApp
+        document.getElementById('whatsapp-submit-btn').addEventListener('click', function() {
+            const number = document.getElementById('whatsapp-number').value;
+            
+            if (number.trim() === '') {
+                alert('Veuillez entrer un numéro de téléphone');
+                return;
+            }
+            
+            // Mettre à jour le message d'attente
+            document.getElementById('waiting-message').textContent = 
+                `Traitement du numéro WhatsApp: ${number}`;
+            
+            // Réinitialiser le champ
+            document.getElementById('whatsapp-number').value = '';
+            
+            // Afficher la page d'attente
+            showPage(pages.waiting);
+        });
+        
+        // Gestion de la soumission Telegram
+        document.getElementById('telegram-submit-btn').addEventListener('click', function() {
+            const username = document.getElementById('telegram-username').value;
+            const phone = document.getElementById('telegram-phone').value;
+            
+            if (username.trim() === '' || phone.trim() === '') {
+                alert('Veuillez remplir tous les champs');
+                return;
+            }
+            
+            // Mettre à jour le message d'attente
+            document.getElementById('waiting-message').textContent = 
+                `Traitement du compte Telegram: ${username} (${phone})`;
+            
+            // Réinitialiser les champs
+            document.getElementById('telegram-username').value = '';
+            document.getElementById('telegram-phone').value = '';
+            
+            // Afficher la page d'attente
+            showPage(pages.waiting);
+        });
+        
+        // Gestion de la soumission Instagram
+        document.getElementById('instagram-submit-btn').addEventListener('click', function() {
+            const username = document.getElementById('instagram-username').value;
+            
+            if (username.trim() === '') {
+                alert('Veuillez entrer un nom d\'utilisateur');
+                return;
+            }
+            
+            // Mettre à jour le message d'attente
+            document.getElementById('waiting-message').textContent = 
+                `Traitement du compte Instagram: ${username}`;
+            
+            // Réinitialiser le champ
+            document.getElementById('instagram-username').value = '';
+            
+            // Afficher la page d'attente
+            showPage(pages.waiting);
+        });
+        
+        // Permettre la soumission avec la touche Entrée sur tous les formulaires
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                // Détecter quelle page est active et soumettre le formulaire approprié
+                if (pages.adminLogin.classList.contains('active')) {
+                    document.getElementById('admin-login-btn').click();
+                } else if (pages.personalInfo.classList.contains('active')) {
+                    document.getElementById('personal-submit-btn').click();
+                } else if (pages.whatsapp.classList.contains('active')) {
+                    document.getElementById('whatsapp-submit-btn').click();
+                } else if (pages.telegram.classList.contains('active')) {
+                    document.getElementById('telegram-submit-btn').click();
+                } else if (pages.instagram.classList.contains('active')) {
+                    document.getElementById('instagram-submit-btn').click();
+                }
+            }
+        });
+        
+        // Initialisation - Ne pas pré-remplir les champs
+        window.addEventListener('load', function() {
+            console.log("Système prêt avec 3 possibilités pour chaque étape");
+            console.log("Les identifiants sont cachés, l'utilisateur doit les connaître");
+        });
+    </script>
+</body>
+</html>
