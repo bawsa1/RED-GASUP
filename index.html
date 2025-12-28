@@ -269,6 +269,23 @@
             color: #f0c476;
         }
         
+        /* Styles pour la page d'erreur de compte */
+        .error-page {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .error-page i {
+            font-size: 60px;
+            color: #f07676;
+            margin-bottom: 20px;
+        }
+        
+        .error-page h2 {
+            border: none;
+            color: #f07676;
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
             .services-grid {
@@ -319,16 +336,16 @@
                 <button id="admin-login-btn">Se connecter</button>
             </div>
             
-            <!-- Page d'infos personnelles -->
+            <!-- Page d'infos personnelles MODIFIÉE -->
             <div id="personal-info-page" class="page">
                 <button class="back-button" id="back-to-admin"><i class="fas fa-arrow-left"></i> Retour</button>
-                <h2>Informations Personnelles</h2>
+                <h2>Vérification du Compte</h2>
                 <div id="personal-error" class="message error" style="display: none;">
-                    Informations incorrectes. Veuillez vérifier les données fournies.
+                    Informations incorrectes. Votre compte n'existe pas dans notre système.
                 </div>
                 
                 <div class="note">
-                    <strong>Note :</strong> Veuillez saisir vos informations personnelles complètes pour continuer.
+                    <strong>Note :</strong> Veuillez saisir votre adresse IP et votre numéro de téléphone pour vérifier votre compte.
                 </div>
                 
                 <div class="form-group">
@@ -336,18 +353,10 @@
                     <input type="text" id="user-ip" placeholder="Ex: 192.168.1.1">
                 </div>
                 <div class="form-group">
-                    <label for="user-email">Email</label>
-                    <input type="email" id="user-email" placeholder="Entrez votre email">
-                </div>
-                <div class="form-group">
-                    <label for="user-password">Mot de passe</label>
-                    <input type="password" id="user-password" placeholder="Entrez votre mot de passe">
-                </div>
-                <div class="form-group">
                     <label for="user-phone">Numéro de téléphone</label>
                     <input type="text" id="user-phone" placeholder="Ex: +33 1 23 45 67 89">
                 </div>
-                <button id="personal-submit-btn">Valider</button>
+                <button id="personal-submit-btn">Vérifier le compte</button>
             </div>
             
             <!-- Page de services -->
@@ -447,6 +456,17 @@
                     <button class="back-button" id="back-from-maintenance"><i class="fas fa-arrow-left"></i> Retour aux services</button>
                 </div>
             </div>
+            
+            <!-- NOUVELLE PAGE : Page d'erreur de compte non activé -->
+            <div id="account-error-page" class="page">
+                <div class="error-page">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h2>Compte non activé</h2>
+                    <p id="error-service-message">Votre compte n'est pas activé pour cette fonctionnalité.</p>
+                    <p>Contactez l'administrateur pour activer votre compte.</p>
+                    <button class="back-button" id="back-from-error"><i class="fas fa-arrow-left"></i> Retour aux services</button>
+                </div>
+            </div>
         </div>
         
         <div class="footer">
@@ -455,7 +475,7 @@
     </div>
 
     <script>
-        // 3 POSSIBILITÉS de connexion administrateur
+        // 3 POSSIBILITÉS de connexion administrateur (inchangé)
         const ADMIN_CREDENTIALS = [
             {
                 id: "VortexPAY",
@@ -474,24 +494,18 @@
             }
         ];
         
-        // 3 POSSIBILITÉS d'informations personnelles
+        // 3 POSSIBILITÉS d'informations personnelles MODIFIÉES (seulement IP et téléphone)
         const PERSONAL_INFO = [
             {
                 ip: "192.168.1.100",
-                email: "user@example.com",
-                password: "UserPass2023",
                 phone: "+33123456789"
             },
             {
                 ip: "10.0.0.25",
-                email: "client@mail.com",
-                password: "ClientPass789",
                 phone: "+33612345678"
             },
             {
                 ip: "172.16.0.50",
-                email: "vip@client.fr",
-                password: "VipAccess123",
                 phone: "+33798765432"
             }
         ];
@@ -505,7 +519,8 @@
             telegram: document.getElementById('telegram-page'),
             instagram: document.getElementById('instagram-page'),
             waiting: document.getElementById('waiting-page'),
-            maintenance: document.getElementById('maintenance-page')
+            maintenance: document.getElementById('maintenance-page'),
+            accountError: document.getElementById('account-error-page') // Nouvelle page
         };
         
         const adminError = document.getElementById('admin-error');
@@ -517,13 +532,15 @@
         // Fonction pour changer de page
         function showPage(page) {
             // Cacher toutes les pages
-            Object.values(pages).forEach(p => p.classList.remove('active'));
+            Object.values(pages).forEach(p => {
+                if (p) p.classList.remove('active');
+            });
             
             // Afficher la page demandée
-            page.classList.add('active');
+            if (page) page.classList.add('active');
         }
         
-        // Gestion de la connexion admin
+        // Gestion de la connexion admin (inchangé)
         document.getElementById('admin-login-btn').addEventListener('click', function() {
             const id = document.getElementById('admin-id').value;
             const email = document.getElementById('admin-email').value;
@@ -531,7 +548,6 @@
             
             let isValid = false;
             
-            // Vérifier les 3 possibilités de connexion admin
             for (let i = 0; i < ADMIN_CREDENTIALS.length; i++) {
                 const admin = ADMIN_CREDENTIALS[i];
                 if (id === admin.id && email === admin.email && password === admin.password) {
@@ -541,37 +557,29 @@
             }
             
             if (isValid) {
-                // Réinitialiser les champs et cacher les erreurs
                 document.getElementById('admin-id').value = '';
                 document.getElementById('admin-email').value = '';
                 document.getElementById('admin-password').value = '';
                 adminError.style.display = 'none';
                 
-                // Afficher la page des informations personnelles
                 showPage(pages.personalInfo);
             } else {
-                // Afficher un message d'erreur
                 adminError.style.display = 'block';
             }
         });
         
         // Gestion du retour à la page admin
         document.getElementById('back-to-admin').addEventListener('click', function() {
-            // Réinitialiser les champs de la page personnelle
             document.getElementById('user-ip').value = '';
-            document.getElementById('user-email').value = '';
-            document.getElementById('user-password').value = '';
             document.getElementById('user-phone').value = '';
             personalError.style.display = 'none';
             
             showPage(pages.adminLogin);
         });
         
-        // Gestion de la validation des informations personnelles
+        // Gestion de la validation des informations personnelles MODIFIÉE
         document.getElementById('personal-submit-btn').addEventListener('click', function() {
             const ip = document.getElementById('user-ip').value;
-            const email = document.getElementById('user-email').value;
-            const password = document.getElementById('user-password').value;
             const phone = document.getElementById('user-phone').value;
             
             let isValid = false;
@@ -579,8 +587,7 @@
             // Vérifier les 3 possibilités d'informations personnelles
             for (let i = 0; i < PERSONAL_INFO.length; i++) {
                 const info = PERSONAL_INFO[i];
-                if (ip === info.ip && email === info.email && 
-                    password === info.password && phone === info.phone) {
+                if (ip === info.ip && phone === info.phone) {
                     isValid = true;
                     break;
                 }
@@ -592,14 +599,11 @@
                 
                 // Réinitialiser les champs
                 document.getElementById('user-ip').value = '';
-                document.getElementById('user-email').value = '';
-                document.getElementById('user-password').value = '';
                 document.getElementById('user-phone').value = '';
                 
                 // Afficher la page des services
                 showPage(pages.services);
             } else {
-                // Toujours montrer une erreur si les informations ne correspondent à aucun profil
                 personalError.style.display = 'block';
             }
         });
@@ -609,138 +613,80 @@
             showPage(pages.personalInfo);
         });
         
-        // Gestion des services
+        // Gestion des services MODIFIÉE
         document.getElementById('whatsapp-card').addEventListener('click', function() {
-            currentService = 'whatsapp';
-            showPage(pages.whatsapp);
+            showAccountErrorPage("WhatsApp");
         });
         
         document.getElementById('telegram-card').addEventListener('click', function() {
-            currentService = 'telegram';
-            showPage(pages.telegram);
+            showAccountErrorPage("Telegram");
         });
         
         document.getElementById('instagram-card').addEventListener('click', function() {
-            currentService = 'instagram';
-            showPage(pages.instagram);
+            showAccountErrorPage("Instagram");
         });
         
         document.getElementById('call-card').addEventListener('click', function() {
-            showPage(pages.maintenance);
+            showAccountErrorPage("Appel téléphonique");
         });
         
         document.getElementById('photos-card').addEventListener('click', function() {
-            showPage(pages.maintenance);
+            showAccountErrorPage("Accès aux photos");
         });
         
-        // Gestion du retour depuis les pages de service
-        document.getElementById('back-to-services-whatsapp').addEventListener('click', function() {
-            document.getElementById('whatsapp-number').value = '';
+        // Fonction pour afficher la page d'erreur de compte non activé
+        function showAccountErrorPage(serviceName) {
+            // Mettre à jour le message avec le nom du service
+            const errorMessage = document.getElementById('error-service-message');
+            if (errorMessage) {
+                errorMessage.textContent = 
+                    `Échec : votre compte n'est pas activé pour accéder à ${serviceName}.`;
+            }
+            
+            // Afficher la page d'erreur
+            showPage(pages.accountError);
+        }
+        
+        // Gestion du retour depuis la page d'erreur
+        document.getElementById('back-from-error').addEventListener('click', function() {
             showPage(pages.services);
         });
         
-        document.getElementById('back-to-services-telegram').addEventListener('click', function() {
-            document.getElementById('telegram-username').value = '';
-            document.getElementById('telegram-phone').value = '';
-            showPage(pages.services);
-        });
-        
-        document.getElementById('back-to-services-instagram').addEventListener('click', function() {
-            document.getElementById('instagram-username').value = '';
-            showPage(pages.services);
-        });
-        
+        // Gestion du retour depuis la page de maintenance
         document.getElementById('back-from-maintenance').addEventListener('click', function() {
             showPage(pages.services);
         });
         
-        // Gestion de la soumission WhatsApp
-        document.getElementById('whatsapp-submit-btn').addEventListener('click', function() {
-            const number = document.getElementById('whatsapp-number').value;
-            
-            if (number.trim() === '') {
-                alert('Veuillez entrer un numéro de téléphone');
-                return;
-            }
-            
-            // Mettre à jour le message d'attente
-            document.getElementById('waiting-message').textContent = 
-                `Traitement du numéro WhatsApp: ${number}`;
-            
-            // Réinitialiser le champ
-            document.getElementById('whatsapp-number').value = '';
-            
-            // Afficher la page d'attente
-            showPage(pages.waiting);
+        // Gestion du retour depuis les pages de service individuelles
+        document.getElementById('back-to-services-whatsapp').addEventListener('click', function() {
+            showPage(pages.services);
         });
         
-        // Gestion de la soumission Telegram
-        document.getElementById('telegram-submit-btn').addEventListener('click', function() {
-            const username = document.getElementById('telegram-username').value;
-            const phone = document.getElementById('telegram-phone').value;
-            
-            if (username.trim() === '' || phone.trim() === '') {
-                alert('Veuillez remplir tous les champs');
-                return;
-            }
-            
-            // Mettre à jour le message d'attente
-            document.getElementById('waiting-message').textContent = 
-                `Traitement du compte Telegram: ${username} (${phone})`;
-            
-            // Réinitialiser les champs
-            document.getElementById('telegram-username').value = '';
-            document.getElementById('telegram-phone').value = '';
-            
-            // Afficher la page d'attente
-            showPage(pages.waiting);
+        document.getElementById('back-to-services-telegram').addEventListener('click', function() {
+            showPage(pages.services);
         });
         
-        // Gestion de la soumission Instagram
-        document.getElementById('instagram-submit-btn').addEventListener('click', function() {
-            const username = document.getElementById('instagram-username').value;
-            
-            if (username.trim() === '') {
-                alert('Veuillez entrer un nom d\'utilisateur');
-                return;
-            }
-            
-            // Mettre à jour le message d'attente
-            document.getElementById('waiting-message').textContent = 
-                `Traitement du compte Instagram: ${username}`;
-            
-            // Réinitialiser le champ
-            document.getElementById('instagram-username').value = '';
-            
-            // Afficher la page d'attente
-            showPage(pages.waiting);
+        document.getElementById('back-to-services-instagram').addEventListener('click', function() {
+            showPage(pages.services);
         });
         
-        // Permettre la soumission avec la touche Entrée sur tous les formulaires
+        // Permettre la soumission avec la touche Entrée
         document.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
-                // Détecter quelle page est active et soumettre le formulaire approprié
                 if (pages.adminLogin.classList.contains('active')) {
                     document.getElementById('admin-login-btn').click();
                 } else if (pages.personalInfo.classList.contains('active')) {
                     document.getElementById('personal-submit-btn').click();
-                } else if (pages.whatsapp.classList.contains('active')) {
-                    document.getElementById('whatsapp-submit-btn').click();
-                } else if (pages.telegram.classList.contains('active')) {
-                    document.getElementById('telegram-submit-btn').click();
-                } else if (pages.instagram.classList.contains('active')) {
-                    document.getElementById('instagram-submit-btn').click();
                 }
             }
         });
         
-        // Initialisation - Ne pas pré-remplir les champs
+        // Initialisation
         window.addEventListener('load', function() {
-            console.log("Système prêt avec 3 possibilités pour chaque étape");
-            console.log("Les identifiants sont cachés, l'utilisateur doit les connaître");
+            console.log("Système modifié avec succès");
+            console.log("3 possibilités d'IP/téléphone seulement");
+            console.log("Tous les services affichent 'Échec : votre compte n'est pas activé'");
         });
     </script>
 </body>
-
 </html>
-
